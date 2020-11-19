@@ -4,18 +4,21 @@ import time
 import pygame as pg
 
 
+
 class Ball():
     """Класс мячика"""
-    def __init__(self, window):
+    def __init__(self, window, board_top, board_bottom):
         """Инициализаця первичных настроек"""
         self.window = window
+        self.board_top = board_top
+        self.board_bottom = board_bottom
         self.pos_x = pg.display.get_window_size()[0] // 2
         self.pos_y = pg.display.get_window_size()[1] // 2
         self.radius = 15
         self.color = (200, 30, 30)
         self.speed_x = random.choice([-8, 8])
         self.speed_y = random.choice([-7, -6, -5, 5, 6, 7])
-    
+        
 
     def draw(self):
         """
@@ -32,9 +35,12 @@ class Ball():
         if self.pos_x + self.radius > pg.display.get_window_size()[0] or\
             self.pos_x - self.radius < 0:
                 self.speed_x = -self.speed_x
-        elif self.pos_y + self.radius > pg.display.get_window_size()[1] or\
-            self.pos_y - self.radius < 0:
-                restart()
+        elif self.pos_y + self.radius > pg.display.get_window_size()[1]:
+            self.board_top.score += 1
+            restart()
+        elif self.pos_y - self.radius < 0:
+            self.board_bottom.score += 1
+            restart()
 
 
     def check_collision_board(self, board_top, board_bottom):
@@ -65,6 +71,7 @@ class Board():
         self.pos_x = pg.display.get_window_size()[0] // 2 - self.width // 2
         self.pos_y = pos_y
         self.speed = 10
+        self.score = 0
 
 
     def draw(self):
@@ -108,8 +115,9 @@ def check_events():
 
 
 def restart():
-    
-        
+    """Возвращение начального положения всех объектов"""
+    font_render = font.render(f'{board_top.score} : {board_bottom.score}', True, (250, 250, 250))
+    window.blit(font_render, (window_width // 2 - 35, window_height // 2 - 100))
     ball.pos_x = pg.display.get_window_size()[0] // 2
     ball.pos_y = pg.display.get_window_size()[1] // 2
     ball.speed_x = random.choice([-8, 8])
@@ -121,16 +129,22 @@ def restart():
     board_bottom.draw()
     pg.display.update()
     time.sleep(2)
+
+
 clock = pg.time.Clock()
 
 window_width = 600
 window_height = 600
 window_fps = 30
 window = pg.display.set_mode((window_width, window_height))
-ball = Ball(window)
 board_top = Board(window, 15, 10)
 board_bottom = Board(window, window_height - 25, 10)
+ball = Ball(window, board_top, board_bottom)
+font_size = 42
+font = pg.font.SysFont(None, font_size, bold=True, italic=True)
 
+#Инициализация библиотеки
+pg.init()
 
 while True:
     check_events()
